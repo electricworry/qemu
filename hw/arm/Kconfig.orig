@@ -341,22 +341,6 @@ config ALLWINNER_H3
     select USB_EHCI_SYSBUS
     select SD
 
-config ALLWINNER_H616
-    bool
-    default y
-    depends on TCG && AARCH64
-    select ALLWINNER_A10_PIT
-    select ALLWINNER_SUN8I_EMAC
-    select ALLWINNER_I2C
-    select ALLWINNER_WDT
-    select SERIAL_MM
-    select ARM_TIMER
-    select ARM_GIC
-    select UNIMP
-    select USB_OHCI_SYSBUS
-    select USB_EHCI_SYSBUS
-    select SD
-
 config ALLWINNER_R40
     bool
     default y if TCG && ARM
