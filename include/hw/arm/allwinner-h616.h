@@ -37,7 +37,7 @@
 
 #include "qom/object.h"
 #include "hw/timer/allwinner-a10-pit.h"
-#include "hw/intc/arm_gicv3.h"
+#include "hw/intc/arm_gic.h"
 #include "hw/misc/allwinner-h616-ccu.h"
 #include "hw/misc/allwinner-cpucfg.h"
 #include "hw/misc/allwinner-h616-dramc.h"
@@ -143,9 +143,8 @@ struct AwH616State {
     AwSun8iEmacState emac;
     AwRtcState rtc;
     AwWdtState wdt;
-    GICv3State gic;
+    GICState gic;
     MemoryRegion sram_a1;
-    MemoryRegion sram_a2;
     MemoryRegion sram_c;
 };
 
