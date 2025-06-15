@@ -31,7 +31,7 @@ static struct arm_boot_info orangepi_binfo;
 
 static void orangepi_init(MachineState *machine)
 {
-    printf("orangepi_init\n");
+    printf("orangepi_init start\n");
     AwH616State *h616;
     DriveInfo *di;
     BlockBackend *blk;
@@ -53,18 +53,16 @@ static void orangepi_init(MachineState *machine)
         exit(1);
     }
 
-    printf("orangepi_init 2\n");
     h616 = AW_H616(object_new(TYPE_AW_H616));
-    printf("orangepi_init 3\n");
     object_property_add_child(OBJECT(machine), "soc", OBJECT(h616));
     object_unref(OBJECT(h616));
 
-    /* Setup timer properties */
-    // object_property_set_int(OBJECT(h616), "clk0-freq", 32768, &error_abort);
-    // object_property_set_int(OBJECT(h616), "clk1-freq", 24 * 1000 * 1000,
-    //                         &error_abort);
+    /* Setup timer properties */ // TODO: How do I figure these out?
+    object_property_set_int(OBJECT(h616), "clk0-freq", 32768, &error_abort);
+    object_property_set_int(OBJECT(h616), "clk1-freq", 24 * 1000 * 1000,
+                            &error_abort);
 
-    /* Setup SID properties. Currently using a default fixed SID identifier. */
+    /* Setup SID properties. Currently using a default fixed SID identifier. */ // TODO, check what these values should be.
     if (qemu_uuid_is_null(&h616->sid.identifier)) {
         qdev_prop_set_string(DEVICE(h616), "identifier",
                              "02c00081-1111-2222-3333-000044556677");
@@ -73,7 +71,8 @@ static void orangepi_init(MachineState *machine)
     }
 
     /* Setup EMAC properties */
-    // object_property_set_int(OBJECT(&h616->emac), "phy-addr", 1, &error_abort);
+    object_property_set_int(OBJECT(&h616->emac0), "phy-addr", 1, &error_abort);
+    object_property_set_int(OBJECT(&h616->emac1), "phy-addr", 1, &error_abort);
 
     /* DRAMC */
     object_property_set_uint(OBJECT(h616), "ram-addr", h616->memmap[AW_H616_DEV_SDRAM],
@@ -81,7 +80,6 @@ static void orangepi_init(MachineState *machine)
     object_property_set_int(OBJECT(h616), "ram-size", machine->ram_size / MiB,
                             &error_abort);
 
-    printf("orangepi_init 2\n");
     /* Mark H616 object realized */
     qdev_realize(DEVICE(h616), NULL, &error_abort);
 
@@ -94,17 +92,16 @@ static void orangepi_init(MachineState *machine)
     carddev = qdev_new(TYPE_SD_CARD);
     qdev_prop_set_drive_err(carddev, "drive", blk, &error_fatal);
     qdev_realize_and_unref(carddev, bus, &error_fatal);
-    printf("orangepi_init 3\n");
 
     /* SDRAM */
     memory_region_add_subregion(get_system_memory(), h616->memmap[AW_H616_DEV_SDRAM],
                                 machine->ram);
 
     /* Load target kernel or start using BootROM */
-    // if (!machine->kernel_filename && blk && blk_is_available(blk)) {
-    //     /* Use Boot ROM to copy data from SD card to SRAM */
-    //     allwinner_h616_bootrom_setup(h616, blk);
-    // }
+    if (!machine->kernel_filename && blk && blk_is_available(blk)) {
+        /* Use Boot ROM to copy data from SD card to SRAM */
+        allwinner_h616_bootrom_setup(h616, blk);
+    }
     orangepi_binfo.loader_start = h616->memmap[AW_H616_DEV_SDRAM];
     orangepi_binfo.ram_size = machine->ram_size;
     orangepi_binfo.psci_conduit = QEMU_PSCI_CONDUIT_SMC;
@@ -115,9 +112,8 @@ static void orangepi_init(MachineState *machine)
 
 static void orangepi_machine_init(MachineClass *mc)
 {
-    printf("orangepi_machine_init\n");
     static const char * const valid_cpu_types[] = {
-        ARM_CPU_TYPE_NAME("cortex-a7"),
+        ARM_CPU_TYPE_NAME("cortex-a53"),
         NULL
     };
 
@@ -130,10 +126,9 @@ static void orangepi_machine_init(MachineClass *mc)
     mc->default_cpus = AW_H616_NUM_CPUS;
     mc->default_cpu_type = ARM_CPU_TYPE_NAME("cortex-a53");
     mc->valid_cpu_types = valid_cpu_types;
-    mc->default_ram_size = 1 * GiB;
+    mc->default_ram_size = 4 * GiB;
     mc->default_ram_id = "orangepi-zero3.ram";
     mc->auto_create_sdcard = true;
-    printf("orangepi_machine_init exit\n");
 }
 
 DEFINE_MACHINE("orangepi-zero3", orangepi_machine_init)

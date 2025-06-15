@@ -63,10 +63,10 @@
  */
 enum {
     AW_H616_DEV_SRAM_A1,
-    AW_H616_DEV_SRAM_A2,
     AW_H616_DEV_SRAM_C,
     AW_H616_DEV_SYSCTRL,
     AW_H616_DEV_MMC0,
+    AW_H616_DEV_MMC1,
     AW_H616_DEV_SID,
     AW_H616_DEV_EHCI0,
     AW_H616_DEV_OHCI0,
@@ -82,7 +82,10 @@ enum {
     AW_H616_DEV_UART1,
     AW_H616_DEV_UART2,
     AW_H616_DEV_UART3,
-    AW_H616_DEV_EMAC,
+    AW_H616_DEV_UART4,
+    AW_H616_DEV_UART5,
+    AW_H616_DEV_EMAC0,
+    AW_H616_DEV_EMAC1,
     AW_H616_DEV_TWI0,
     AW_H616_DEV_TWI1,
     AW_H616_DEV_TWI2,
@@ -140,7 +143,8 @@ struct AwH616State {
     AWI2CState i2c1;
     AWI2CState i2c2;
     AWI2CState r_twi;
-    AwSun8iEmacState emac;
+    AwSun8iEmacState emac0;
+    AwSun8iEmacState emac1;
     AwRtcState rtc;
     AwWdtState wdt;
     GICState gic;

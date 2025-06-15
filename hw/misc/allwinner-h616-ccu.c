@@ -28,15 +28,19 @@
 /* CCU register offsets */
 enum {
     REG_PLL_CPUX             = 0x0000, /* PLL CPUX Control */
-    REG_PLL_AUDIO            = 0x0008, /* PLL Audio Control */
-    REG_PLL_VIDEO            = 0x0010, /* PLL Video Control */
-    REG_PLL_VE               = 0x0018, /* PLL VE Control */
-    REG_PLL_DDR              = 0x0020, /* PLL DDR Control */
-    REG_PLL_PERIPH0          = 0x0028, /* PLL Peripherals 0 Control */
-    REG_PLL_GPU              = 0x0038, /* PLL GPU Control */
-    REG_PLL_PERIPH1          = 0x0044, /* PLL Peripherals 1 Control */
-    REG_PLL_DE               = 0x0048, /* PLL Display Engine Control */
-    REG_CPUX_AXI             = 0x0050, /* CPUX/AXI Configuration */
+    REG_PLL_DDR0             = 0x0010, /* PLL DDR 0 Control */
+    REG_PLL_DDR1             = 0x0018, /* PLL DDR 1 Control */
+    REG_PLL_PERI0            = 0x0020, /* PLL Peripherals 0 Control */
+    REG_PLL_PERI1            = 0x0028, /* PLL Peripherals 1 Control */
+    REG_PLL_GPU0             = 0x0030, /* PLL GPU 0 Control */
+    REG_PLL_VIDEO0           = 0x0040, /* PLL Video 0 Control */
+    REG_PLL_VIDEO1           = 0x0048, /* PLL Video 0 Control */
+    REG_PLL_VE               = 0x0058, /* PLL VE Control */
+    REG_PLL_DE               = 0x0060, /* PLL Display Engine Control */
+    REG_PLL_AUDIO            = 0x0078, /* PLL Audio Control */
+    REG_CPUX_AXI             = 0x0500, /* CPUX/AXI Configuration */
+
+
     REG_APB1                 = 0x0054, /* ARM Peripheral Bus 1 Config */
     REG_APB2                 = 0x0058, /* ARM Peripheral Bus 2 Config */
     REG_DRAM_CFG             = 0x00F4, /* DRAM Configuration */
@@ -128,12 +132,13 @@ static void allwinner_h616_ccu_write(void *opaque, hwaddr offset,
         break;
     case REG_PLL_CPUX:    /* PLL CPUX Control */
     case REG_PLL_AUDIO:   /* PLL Audio Control */
-    case REG_PLL_VIDEO:   /* PLL Video Control */
+    case REG_PLL_VIDEO0:  /* PLL Video Control */
     case REG_PLL_VE:      /* PLL VE Control */
-    case REG_PLL_DDR:     /* PLL DDR Control */
-    case REG_PLL_PERIPH0: /* PLL Peripherals 0 Control */
-    case REG_PLL_GPU:     /* PLL GPU Control */
-    case REG_PLL_PERIPH1: /* PLL Peripherals 1 Control */
+    case REG_PLL_DDR0:    /* PLL DDR Control */
+    case REG_PLL_DDR1:    /* PLL DDR Control */
+    case REG_PLL_PERI0:   /* PLL Peripherals 0 Control */
+    case REG_PLL_GPU0:    /* PLL GPU Control */
+    case REG_PLL_PERI1:   /* PLL Peripherals 1 Control */
     case REG_PLL_DE:      /* PLL Display Engine Control */
         if (val & REG_PLL_ENABLE) {
             val |= REG_PLL_LOCK;
@@ -170,12 +175,12 @@ static void allwinner_h616_ccu_reset(DeviceState *dev)
     /* Set default values for registers */
     s->regs[REG_INDEX(REG_PLL_CPUX)] = REG_PLL_CPUX_RST;
     s->regs[REG_INDEX(REG_PLL_AUDIO)] = REG_PLL_AUDIO_RST;
-    s->regs[REG_INDEX(REG_PLL_VIDEO)] = REG_PLL_VIDEO_RST;
+    s->regs[REG_INDEX(REG_PLL_VIDEO0)] = REG_PLL_VIDEO_RST;
     s->regs[REG_INDEX(REG_PLL_VE)] = REG_PLL_VE_RST;
-    s->regs[REG_INDEX(REG_PLL_DDR)] = REG_PLL_DDR_RST;
-    s->regs[REG_INDEX(REG_PLL_PERIPH0)] = REG_PLL_PERIPH0_RST;
-    s->regs[REG_INDEX(REG_PLL_GPU)] = REG_PLL_GPU_RST;
-    s->regs[REG_INDEX(REG_PLL_PERIPH1)] = REG_PLL_PERIPH1_RST;
+    s->regs[REG_INDEX(REG_PLL_DDR0)] = REG_PLL_DDR_RST;
+    s->regs[REG_INDEX(REG_PLL_PERI0)] = REG_PLL_PERIPH0_RST;
+    s->regs[REG_INDEX(REG_PLL_GPU0)] = REG_PLL_GPU_RST;
+    s->regs[REG_INDEX(REG_PLL_PERI1)] = REG_PLL_PERIPH1_RST;
     s->regs[REG_INDEX(REG_PLL_DE)] = REG_PLL_DE_RST;
     s->regs[REG_INDEX(REG_CPUX_AXI)] = REG_CPUX_AXI_RST;
     s->regs[REG_INDEX(REG_APB1)] = REG_APB1_RST;

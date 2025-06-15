@@ -29,7 +29,7 @@
  */
 
 /** Size of register I/O address space used by CCU device */
-#define AW_H616_CCU_IOSIZE        (0x400)
+#define AW_H616_CCU_IOSIZE        (0x1000)
 
 /** Total number of known registers */
 #define AW_H616_CCU_REGS_NUM      (AW_H616_CCU_IOSIZE / sizeof(uint32_t))

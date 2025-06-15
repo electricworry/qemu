@@ -559,7 +559,6 @@ static void object_initialize_with_type(Object *obj, size_t size, TypeImpl *type
 
     g_assert(type->instance_size >= sizeof(Object));
     g_assert(type->abstract == false);
-    printf("size %ld instance_size %ld\n", size, type->instance_size);
     g_assert(size >= type->instance_size);
 
     memset(obj, 0, type->instance_size);
