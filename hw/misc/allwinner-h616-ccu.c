@@ -58,6 +58,7 @@ enum {
     REG_PLL_DE_BIAS          = 0x0248, /* PLL Display Engine Bias */
     REG_PLL_CPUX_TUNING      = 0x0250, /* PLL CPUX Tuning */
     REG_PLL_DDR_TUNING       = 0x0260, /* PLL DDR Tuning */
+    REG_DMA_BGR              = 0x070C, /* DMA Bus Gating Reset */
 };
 
 #define REG_INDEX(offset)    (offset / sizeof(uint32_t))
@@ -102,16 +103,18 @@ enum {
     REG_PLL_DE_BIAS_RST      = 0x10100000,
     REG_PLL_CPUX_TUNING_RST  = 0x0A101000,
     REG_PLL_DDR_TUNING_RST   = 0x14880000,
+    REG_DMA_BGR_RST          = 0x00000000,
 };
 
 static uint64_t allwinner_h616_ccu_read(void *opaque, hwaddr offset,
                                       unsigned size)
 {
+    // printf("BBBBBBB allwinner_h616_ccu_read %lx %d\n", offset, size);
     const AwH616ClockCtlState *s = AW_H616_CCU(opaque);
     const uint32_t idx = REG_INDEX(offset);
 
     switch (offset) {
-    case 0x308 ... AW_H616_CCU_IOSIZE:
+    case 0x0F24 ... AW_H616_CCU_IOSIZE:
         qemu_log_mask(LOG_GUEST_ERROR, "%s: out-of-bounds offset 0x%04x\n",
                       __func__, (uint32_t)offset);
         return 0;
@@ -123,38 +126,43 @@ static uint64_t allwinner_h616_ccu_read(void *opaque, hwaddr offset,
 static void allwinner_h616_ccu_write(void *opaque, hwaddr offset,
                                    uint64_t val, unsigned size)
 {
-    AwH616ClockCtlState *s = AW_H616_CCU(opaque);
-    const uint32_t idx = REG_INDEX(offset);
+        return;
+    // AwH616ClockCtlState *s = AW_H616_CCU(opaque);
+    // const uint32_t idx = REG_INDEX(offset);
 
-    switch (offset) {
-    case REG_DRAM_CFG:    /* DRAM Configuration */
-        val &= ~REG_DRAM_CFG_UPDATE;
-        break;
-    case REG_PLL_CPUX:    /* PLL CPUX Control */
-    case REG_PLL_AUDIO:   /* PLL Audio Control */
-    case REG_PLL_VIDEO0:  /* PLL Video Control */
-    case REG_PLL_VE:      /* PLL VE Control */
-    case REG_PLL_DDR0:    /* PLL DDR Control */
-    case REG_PLL_DDR1:    /* PLL DDR Control */
-    case REG_PLL_PERI0:   /* PLL Peripherals 0 Control */
-    case REG_PLL_GPU0:    /* PLL GPU Control */
-    case REG_PLL_PERI1:   /* PLL Peripherals 1 Control */
-    case REG_PLL_DE:      /* PLL Display Engine Control */
-        if (val & REG_PLL_ENABLE) {
-            val |= REG_PLL_LOCK;
-        }
-        break;
-    case 0x308 ... AW_H616_CCU_IOSIZE:
-        qemu_log_mask(LOG_GUEST_ERROR, "%s: out-of-bounds offset 0x%04x\n",
-                      __func__, (uint32_t)offset);
-        break;
-    default:
-        qemu_log_mask(LOG_UNIMP, "%s: unimplemented write offset 0x%04x\n",
-                      __func__, (uint32_t)offset);
-        break;
-    }
+    // switch (offset) {
+    // case REG_DRAM_CFG:    /* DRAM Configuration */
+    //     val &= ~REG_DRAM_CFG_UPDATE;
+    //     break;
+    // case REG_PLL_CPUX:    /* PLL CPUX Control */
+    // case REG_PLL_AUDIO:   /* PLL Audio Control */
+    // case REG_PLL_VIDEO0:  /* PLL Video Control */
+    // case REG_PLL_VE:      /* PLL VE Control */
+    // case REG_PLL_DDR0:    /* PLL DDR Control */
+    // case REG_PLL_DDR1:    /* PLL DDR Control */
+    // case REG_PLL_PERI0:   /* PLL Peripherals 0 Control */
+    // case REG_PLL_GPU0:    /* PLL GPU Control */
+    // case REG_PLL_PERI1:   /* PLL Peripherals 1 Control */
+    // case REG_PLL_DE:      /* PLL Display Engine Control */
+    //     if (val & REG_PLL_ENABLE) {
+    //         val |= REG_PLL_LOCK;
+    //     }
+    //     break;
+    // case REG_DMA_BGR:
+    //     printf("YOOOP offset=%lx val=%lx size=%d\n", offset, val, size);
+    //     val &= 0x0101;
+    //     break;
+    // case 0x0F24 ... AW_H616_CCU_IOSIZE:
+    //     qemu_log_mask(LOG_GUEST_ERROR, "%s: out-of-bounds offset 0x%04x\n",
+    //                   __func__, (uint32_t)offset);
+    //     break;
+    // default:
+    //     qemu_log_mask(LOG_UNIMP, "%s: unimplemented write offset 0x%04x\n",
+    //                   __func__, (uint32_t)offset);
+    //     break;
+    // }
 
-    s->regs[idx] = (uint32_t) val;
+    // s->regs[idx] = (uint32_t) val;
 }
 
 static const MemoryRegionOps allwinner_h616_ccu_ops = {
@@ -200,6 +208,7 @@ static void allwinner_h616_ccu_reset(DeviceState *dev)
     s->regs[REG_INDEX(REG_PLL_DE_BIAS)] = REG_PLL_DE_BIAS_RST;
     s->regs[REG_INDEX(REG_PLL_CPUX_TUNING)] = REG_PLL_CPUX_TUNING_RST;
     s->regs[REG_INDEX(REG_PLL_DDR_TUNING)] = REG_PLL_DDR_TUNING_RST;
+    s->regs[REG_INDEX(REG_DMA_BGR)] = REG_DMA_BGR_RST;
 }
 
 static void allwinner_h616_ccu_init(Object *obj)

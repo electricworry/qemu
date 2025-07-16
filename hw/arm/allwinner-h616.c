@@ -38,8 +38,9 @@ const hwaddr allwinner_h616_memmap[] = {
     [AW_H616_DEV_SRAM_A1]    = 0x00020000,
     [AW_H616_DEV_SRAM_C]     = 0x00028000,
     [AW_H616_DEV_SYSCTRL]    = 0x03000000,
-    // [AW_H616_DEV_MMC0]       = 0x04020000,
-    [AW_H616_DEV_MMC1]       = 0x04020000,
+    [AW_H616_DEV_MMC0]       = 0x04020000,
+    // [AW_H616_DEV_MMC1]       = 0x04021000,
+    [AW_H616_DEV_DMA]        = 0x03002000,
     [AW_H616_DEV_SID]        = 0x03006000,
     // [AW_H616_DEV_EHCI0]      = 0x01c1a000,
     // [AW_H616_DEV_OHCI0]      = 0x01c1a400,
@@ -53,16 +54,19 @@ const hwaddr allwinner_h616_memmap[] = {
     [AW_H616_DEV_PIT]        = 0x03009000,
     [AW_H616_DEV_WDT]        = 0x030090a0,
     [AW_H616_DEV_UART0]      = 0x05000000,
-    [AW_H616_DEV_UART1]      = 0x05000400,
-    [AW_H616_DEV_UART2]      = 0x05000800,
-    [AW_H616_DEV_UART3]      = 0x05000C00,
-    [AW_H616_DEV_UART4]      = 0x05001000,
-    [AW_H616_DEV_UART5]      = 0x05001400,
-    // [AW_H616_DEV_TWI0]       = 0x01c2ac00,
-    // [AW_H616_DEV_TWI1]       = 0x01c2b000,
-    // [AW_H616_DEV_TWI2]       = 0x01c2b400,
-    [AW_H616_DEV_EMAC0]       = 0x05020000,
-    [AW_H616_DEV_EMAC1]       = 0x05030000,
+    // [AW_H616_DEV_UART1]      = 0x05000400,
+    // [AW_H616_DEV_UART2]      = 0x05000800,
+    // [AW_H616_DEV_UART3]      = 0x05000C00,
+    // [AW_H616_DEV_UART4]      = 0x05001000,
+    // [AW_H616_DEV_UART5]      = 0x05001400,
+    [AW_H616_DEV_TWI0]       = 0x05002000,
+    [AW_H616_DEV_TWI1]       = 0x05002400,
+    [AW_H616_DEV_TWI2]       = 0x05002800,
+    [AW_H616_DEV_TWI3]       = 0x05002C00,
+    [AW_H616_DEV_TWI4]       = 0x05003000,
+    [AW_H616_DEV_S_TWI0]     = 0x07081400,
+    [AW_H616_DEV_EMAC0]      = 0x05020000,
+    [AW_H616_DEV_EMAC1]      = 0x05030000,
     // [AW_H616_DEV_DRAMCOM]    = 0x01c62000,
     // [AW_H616_DEV_DRAMCTL]    = 0x01c63000,
     // [AW_H616_DEV_DRAMPHY]    = 0x01c65000,
@@ -110,6 +114,7 @@ static struct AwH616Unimplemented {
     { "rtc",            0x07000000, 1 * KiB },
     { "prcm",           0x07010000, 1 * KiB }, // Power Reset Clock Management
     { "twd",            0x07020800, 1 * KiB },
+    { "gpio-pl",        0x07022000, 1 * KiB },
     // Memory
     { "nand0",          0x04011000, 4 * KiB },
     { "smhc0",          0x04020000, 4 * KiB },
@@ -190,6 +195,7 @@ enum {
     AW_H616_GIC_SPI_MMC0      = 35, // correct
     AW_H616_GIC_SPI_MMC1      = 36, // correct
     AW_H616_GIC_SPI_MMC2      = 37, // correct
+    AW_H616_GIC_SPI_DMA       = 42, // correct
     AW_H616_GIC_SPI_TIMER0    = 48, // correct
     AW_H616_GIC_SPI_TIMER1    = 49, // correct
     AW_H616_GIC_SPI_R_TWI     = 44,
@@ -200,7 +206,8 @@ enum {
     AW_H616_GIC_SPI_EHCI2     = 76,
     AW_H616_GIC_SPI_OHCI2     = 77,
     AW_H616_GIC_SPI_EHCI3     = 78,
-    AW_H616_GIC_SPI_OHCI3     = 79
+    AW_H616_GIC_SPI_OHCI3     = 79,
+    AW_H616_GIC_SPI_S_TWI0      =  105, // correct
 };
 
 /* Allwinner H616 general constants */
@@ -254,7 +261,7 @@ static void allwinner_h616_init(Object *obj)
                               "identifier");
 
     printf("allwinner_h616_init\n");
-    object_initialize_child(obj, "mmc0", &s->mmc0, TYPE_AW_SDHOST_SUN50I_A64);
+    object_initialize_child(obj, "mmc0", &s->mmc0, TYPE_AW_SDHOST_SUN50I_A64_EMMC);
 
     object_initialize_child(obj, "emac0", &s->emac0, TYPE_AW_SUN8I_EMAC);
     object_initialize_child(obj, "emac1", &s->emac1, TYPE_AW_SUN8I_EMAC);
@@ -267,12 +274,17 @@ static void allwinner_h616_init(Object *obj)
 
     // object_initialize_child(obj, "rtc", &s->rtc, TYPE_AW_RTC_SUN6I);
 
-    // object_initialize_child(obj, "twi0",  &s->i2c0,  TYPE_AW_I2C_SUN6I);
-    // object_initialize_child(obj, "twi1",  &s->i2c1,  TYPE_AW_I2C_SUN6I);
-    // object_initialize_child(obj, "twi2",  &s->i2c2,  TYPE_AW_I2C_SUN6I);
+    object_initialize_child(obj, "twi0",  &s->i2c0,  TYPE_AW_I2C_SUN6I);
+    object_initialize_child(obj, "twi1",  &s->i2c1,  TYPE_AW_I2C_SUN6I);
+    object_initialize_child(obj, "twi2",  &s->i2c2,  TYPE_AW_I2C_SUN6I);
+    object_initialize_child(obj, "twi3",  &s->i2c3,  TYPE_AW_I2C_SUN6I);
+    object_initialize_child(obj, "twi4",  &s->i2c4,  TYPE_AW_I2C_SUN6I);
+    object_initialize_child(obj, "s_twi0",  &s->s_twi0,  TYPE_AW_I2C_SUN6I);
     // object_initialize_child(obj, "r_twi", &s->r_twi, TYPE_AW_I2C_SUN6I);
 
     object_initialize_child(obj, "wdt", &s->wdt, TYPE_AW_WDT_SUN6I);
+
+    object_initialize_child(obj, "dma", &s->dma, TYPE_ALLWINNER_DMA);
 }
 
 static void allwinner_h616_realize(DeviceState *dev, Error **errp)
@@ -298,6 +310,11 @@ static void allwinner_h616_realize(DeviceState *dev, Error **errp)
         /* Mark realized */
         qdev_realize(DEVICE(&s->cpus[i]), NULL, &error_fatal);
     }
+
+
+    sysbus_realize(SYS_BUS_DEVICE(&s->dma), &error_fatal);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->dma), 0, s->memmap[AW_H616_DEV_DMA]);
+
     printf("allwinner_h616_realize 2\n");
 
     /* Generic Interrupt Controller */
@@ -395,9 +412,9 @@ static void allwinner_h616_realize(DeviceState *dev, Error **errp)
     object_property_set_link(OBJECT(&s->mmc0), "dma-memory",
                              OBJECT(get_system_memory()), &error_fatal);
     sysbus_realize(SYS_BUS_DEVICE(&s->mmc0), &error_fatal);
-    sysbus_mmio_map(SYS_BUS_DEVICE(&s->mmc0), 0, s->memmap[AW_H616_DEV_MMC1]);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->mmc0), 0, s->memmap[AW_H616_DEV_MMC0]);
     sysbus_connect_irq(SYS_BUS_DEVICE(&s->mmc0), 0,
-                       qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_MMC1));
+                       qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_MMC0));
     printf("allwinner_h616_realize 3\n");
 
     object_property_add_alias(OBJECT(s), "sd-bus", OBJECT(&s->mmc0),
@@ -452,26 +469,26 @@ static void allwinner_h616_realize(DeviceState *dev, Error **errp)
     serial_mm_init(get_system_memory(), s->memmap[AW_H616_DEV_UART0], 2,
                    qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_UART0),
                    115200, serial_hd(0), DEVICE_LITTLE_ENDIAN);
-    /* UART1 */
-    serial_mm_init(get_system_memory(), s->memmap[AW_H616_DEV_UART1], 2,
-                   qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_UART1),
-                   115200, serial_hd(1), DEVICE_LITTLE_ENDIAN);
-    /* UART2 */
-    serial_mm_init(get_system_memory(), s->memmap[AW_H616_DEV_UART2], 2,
-                   qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_UART2),
-                   115200, serial_hd(2), DEVICE_LITTLE_ENDIAN);
-    /* UART3 */
-    serial_mm_init(get_system_memory(), s->memmap[AW_H616_DEV_UART3], 2,
-                   qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_UART3),
-                   115200, serial_hd(3), DEVICE_LITTLE_ENDIAN);
-    /* UART4 */
-    serial_mm_init(get_system_memory(), s->memmap[AW_H616_DEV_UART4], 2,
-                   qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_UART4),
-                   115200, serial_hd(4), DEVICE_LITTLE_ENDIAN);
-    /* UART5 */
-    serial_mm_init(get_system_memory(), s->memmap[AW_H616_DEV_UART5], 2,
-                   qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_UART5),
-                   115200, serial_hd(5), DEVICE_LITTLE_ENDIAN);
+    // /* UART1 */
+    // serial_mm_init(get_system_memory(), s->memmap[AW_H616_DEV_UART1], 2,
+    //                qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_UART1),
+    //                115200, serial_hd(1), DEVICE_LITTLE_ENDIAN);
+    // /* UART2 */
+    // serial_mm_init(get_system_memory(), s->memmap[AW_H616_DEV_UART2], 2,
+    //                qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_UART2),
+    //                115200, serial_hd(2), DEVICE_LITTLE_ENDIAN);
+    // /* UART3 */
+    // serial_mm_init(get_system_memory(), s->memmap[AW_H616_DEV_UART3], 2,
+    //                qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_UART3),
+    //                115200, serial_hd(3), DEVICE_LITTLE_ENDIAN);
+    // /* UART4 */
+    // serial_mm_init(get_system_memory(), s->memmap[AW_H616_DEV_UART4], 2,
+    //                qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_UART4),
+    //                115200, serial_hd(4), DEVICE_LITTLE_ENDIAN);
+    // /* UART5 */
+    // serial_mm_init(get_system_memory(), s->memmap[AW_H616_DEV_UART5], 2,
+    //                qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_UART5),
+    //                115200, serial_hd(5), DEVICE_LITTLE_ENDIAN);
 
     /* DRAMC */
     sysbus_realize(SYS_BUS_DEVICE(&s->dramc), &error_fatal);
@@ -484,20 +501,35 @@ static void allwinner_h616_realize(DeviceState *dev, Error **errp)
     // sysbus_mmio_map(SYS_BUS_DEVICE(&s->rtc), 0, s->memmap[AW_H616_DEV_RTC]);
 
     /* I2C */
-    // sysbus_realize(SYS_BUS_DEVICE(&s->i2c0), &error_fatal);
-    // sysbus_mmio_map(SYS_BUS_DEVICE(&s->i2c0), 0, s->memmap[AW_H616_DEV_TWI0]);
-    // sysbus_connect_irq(SYS_BUS_DEVICE(&s->i2c0), 0,
-    //                    qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_TWI0));
+    sysbus_realize(SYS_BUS_DEVICE(&s->i2c0), &error_fatal);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->i2c0), 0, s->memmap[AW_H616_DEV_TWI0]);
+    sysbus_connect_irq(SYS_BUS_DEVICE(&s->i2c0), 0,
+                       qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_TWI0));
 
-    // sysbus_realize(SYS_BUS_DEVICE(&s->i2c1), &error_fatal);
-    // sysbus_mmio_map(SYS_BUS_DEVICE(&s->i2c1), 0, s->memmap[AW_H616_DEV_TWI1]);
-    // sysbus_connect_irq(SYS_BUS_DEVICE(&s->i2c1), 0,
-    //                    qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_TWI1));
+    sysbus_realize(SYS_BUS_DEVICE(&s->i2c1), &error_fatal);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->i2c1), 0, s->memmap[AW_H616_DEV_TWI1]);
+    sysbus_connect_irq(SYS_BUS_DEVICE(&s->i2c1), 0,
+                       qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_TWI1));
 
-    // sysbus_realize(SYS_BUS_DEVICE(&s->i2c2), &error_fatal);
-    // sysbus_mmio_map(SYS_BUS_DEVICE(&s->i2c2), 0, s->memmap[AW_H616_DEV_TWI2]);
-    // sysbus_connect_irq(SYS_BUS_DEVICE(&s->i2c2), 0,
-    //                    qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_TWI2));
+    sysbus_realize(SYS_BUS_DEVICE(&s->i2c2), &error_fatal);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->i2c2), 0, s->memmap[AW_H616_DEV_TWI2]);
+    sysbus_connect_irq(SYS_BUS_DEVICE(&s->i2c2), 0,
+                       qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_TWI2));
+
+    sysbus_realize(SYS_BUS_DEVICE(&s->i2c3), &error_fatal);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->i2c3), 0, s->memmap[AW_H616_DEV_TWI3]);
+    sysbus_connect_irq(SYS_BUS_DEVICE(&s->i2c3), 0,
+                       qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_TWI3));
+
+    sysbus_realize(SYS_BUS_DEVICE(&s->i2c4), &error_fatal);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->i2c4), 0, s->memmap[AW_H616_DEV_TWI4]);
+    sysbus_connect_irq(SYS_BUS_DEVICE(&s->i2c4), 0,
+                       qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_TWI4));
+
+    sysbus_realize(SYS_BUS_DEVICE(&s->s_twi0), &error_fatal);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->s_twi0), 0, s->memmap[AW_H616_DEV_S_TWI0]);
+    sysbus_connect_irq(SYS_BUS_DEVICE(&s->s_twi0), 0,
+                       qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_SPI_S_TWI0));
 
     // sysbus_realize(SYS_BUS_DEVICE(&s->r_twi), &error_fatal);
     // sysbus_mmio_map(SYS_BUS_DEVICE(&s->r_twi), 0, s->memmap[AW_H616_DEV_R_TWI]);

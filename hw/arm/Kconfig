@@ -349,6 +349,7 @@ config ALLWINNER_H616
     select ALLWINNER_SUN8I_EMAC
     select ALLWINNER_I2C
     select ALLWINNER_WDT
+    select ALLWINNER_DMA
     select SERIAL_MM
     select ARM_TIMER
     select ARM_GIC

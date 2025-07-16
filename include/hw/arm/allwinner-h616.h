@@ -50,6 +50,7 @@
 #include "hw/watchdog/allwinner-wdt.h"
 #include "target/arm/cpu.h"
 #include "system/block-backend.h"
+#include "hw/dma/allwinner_dma.h"
 
 /**
  * Allwinner H616 device list
@@ -68,6 +69,7 @@ enum {
     AW_H616_DEV_MMC0,
     AW_H616_DEV_MMC1,
     AW_H616_DEV_SID,
+    AW_H616_DEV_DMA,
     AW_H616_DEV_EHCI0,
     AW_H616_DEV_OHCI0,
     AW_H616_DEV_EHCI1,
@@ -89,6 +91,9 @@ enum {
     AW_H616_DEV_TWI0,
     AW_H616_DEV_TWI1,
     AW_H616_DEV_TWI2,
+    AW_H616_DEV_TWI3,
+    AW_H616_DEV_TWI4,
+    AW_H616_DEV_S_TWI0,
     AW_H616_DEV_DRAMCOM,
     AW_H616_DEV_DRAMCTL,
     AW_H616_DEV_DRAMPHY,
@@ -142,7 +147,10 @@ struct AwH616State {
     AWI2CState i2c0;
     AWI2CState i2c1;
     AWI2CState i2c2;
-    AWI2CState r_twi;
+    AWI2CState i2c3;
+    AWI2CState i2c4;
+    AWI2CState s_twi0;
+    // AWI2CState r_twi;
     AwSun8iEmacState emac0;
     AwSun8iEmacState emac1;
     AwRtcState rtc;
@@ -150,6 +158,7 @@ struct AwH616State {
     GICState gic;
     MemoryRegion sram_a1;
     MemoryRegion sram_c;
+    AllwinnerDMAState dma;
 };
 
 /**
