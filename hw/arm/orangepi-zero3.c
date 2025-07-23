@@ -26,6 +26,7 @@
 #include "hw/qdev-properties.h"
 #include "hw/arm/allwinner-h616.h"
 #include "hw/arm/boot.h"
+#include "hw/i2c/i2c.h"
 
 static struct arm_boot_info orangepi_binfo;
 
@@ -37,6 +38,7 @@ static void orangepi_init(MachineState *machine)
     BlockBackend *blk;
     BusState *bus;
     DeviceState *carddev;
+    I2CBus *i2c;
 
     /* BIOS is not supported by this board */
     if (machine->firmware) {
@@ -107,6 +109,13 @@ static void orangepi_init(MachineState *machine)
     orangepi_binfo.psci_conduit = QEMU_PSCI_CONDUIT_SMC;
     arm_load_kernel(&h616->cpus[0], machine, &orangepi_binfo);
     
+    /*
+     * OrangePi Zero 3 has an axp313a at I2C bus s_twi0 at address 0x36.
+     * For now an axp221 will suffice.
+     */
+    i2c = I2C_BUS(qdev_get_child_bus(DEVICE(&h616->s_twi0), "i2c"));
+    i2c_slave_create_simple(i2c, "axp221_pmu", 0x36);
+
     printf("orangepi_init exit\n");
 }
 
