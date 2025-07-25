@@ -44,6 +44,9 @@
 /** Allwinner sun50i-a64 emmc */
 #define TYPE_AW_SDHOST_SUN50I_A64_EMMC  TYPE_AW_SDHOST "-sun50i-a64-emmc"
 
+/** Allwinner sun50i-h616 */
+#define TYPE_AW_SDHOST_SUN50I_H616 TYPE_AW_SDHOST "-sun50i-h616"
+
 /** @} */
 
 /**
@@ -141,6 +144,9 @@ struct AwSdHostClass {
 
     /** does the IP block support autocalibration? */
     bool can_calibrate;
+
+    /** Are DMA addresses shifted? */
+    uint32_t dmac_shift;
 };
 
 #endif /* HW_SD_ALLWINNER_SDHOST_H */

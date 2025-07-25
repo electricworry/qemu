@@ -307,23 +307,25 @@ static void allwinner_sdhost_auto_stop(AwSdHostState *s)
 static void read_descriptor(AwSdHostState *s, hwaddr desc_addr,
                             TransferDescriptor *desc)
 {
+    AwSdHostClass *sc = AW_SDHOST_GET_CLASS(s);
     uint32_t desc_words[4];
     dma_memory_read(&s->dma_as, desc_addr, &desc_words, sizeof(desc_words),
                     MEMTXATTRS_UNSPECIFIED);
     desc->status = le32_to_cpu(desc_words[0]);
     desc->size = le32_to_cpu(desc_words[1]);
-    desc->addr = le32_to_cpu(desc_words[2]);
-    desc->next = le32_to_cpu(desc_words[3]);
+    desc->addr = le32_to_cpu(desc_words[2]) << sc->dmac_shift;
+    desc->next = le32_to_cpu(desc_words[3]) << sc->dmac_shift;
 }
 
 static void write_descriptor(AwSdHostState *s, hwaddr desc_addr,
                              const TransferDescriptor *desc)
 {
+    AwSdHostClass *sc = AW_SDHOST_GET_CLASS(s);
     uint32_t desc_words[4];
     desc_words[0] = cpu_to_le32(desc->status);
     desc_words[1] = cpu_to_le32(desc->size);
-    desc_words[2] = cpu_to_le32(desc->addr);
-    desc_words[3] = cpu_to_le32(desc->next);
+    desc_words[2] = cpu_to_le32(desc->addr) >> sc->dmac_shift;
+    desc_words[3] = cpu_to_le32(desc->next) >> sc->dmac_shift;
     dma_memory_write(&s->dma_as, desc_addr, &desc_words, sizeof(desc_words),
                      MEMTXATTRS_UNSPECIFIED);
 }
@@ -387,8 +389,9 @@ static uint32_t allwinner_sdhost_process_desc(AwSdHostState *s,
 
 static void allwinner_sdhost_dma(AwSdHostState *s)
 {
+    AwSdHostClass *sc = AW_SDHOST_GET_CLASS(s);
     TransferDescriptor desc;
-    hwaddr desc_addr = s->desc_base;
+    hwaddr desc_addr = s->desc_base << sc->dmac_shift;
     bool is_write = (s->command & SD_CMDR_WRITE);
     uint32_t bytes_done = 0;
 
@@ -913,6 +916,7 @@ static void allwinner_sdhost_sun4i_class_init(ObjectClass *klass,
     sc->max_desc_size = 8 * KiB;
     sc->is_sun4i = true;
     sc->can_calibrate = false;
+    sc->dmac_shift = 0;
 }
 
 static void allwinner_sdhost_sun5i_class_init(ObjectClass *klass,
@@ -922,6 +926,7 @@ static void allwinner_sdhost_sun5i_class_init(ObjectClass *klass,
     sc->max_desc_size = 64 * KiB;
     sc->is_sun4i = false;
     sc->can_calibrate = false;
+    sc->dmac_shift = 0;
 }
 
 static void allwinner_sdhost_sun50i_a64_class_init(ObjectClass *klass,
@@ -931,6 +936,7 @@ static void allwinner_sdhost_sun50i_a64_class_init(ObjectClass *klass,
     sc->max_desc_size = 64 * KiB;
     sc->is_sun4i = false;
     sc->can_calibrate = true;
+    sc->dmac_shift = 0;
 }
 
 static void allwinner_sdhost_sun50i_a64_emmc_class_init(ObjectClass *klass,
@@ -940,6 +946,17 @@ static void allwinner_sdhost_sun50i_a64_emmc_class_init(ObjectClass *klass,
     sc->max_desc_size = 8 * KiB;
     sc->is_sun4i = false;
     sc->can_calibrate = true;
+    sc->dmac_shift = 0;
+}
+
+static void allwinner_sdhost_sun50i_h616_class_init(ObjectClass *klass,
+                                                        const void *data)
+{
+    AwSdHostClass *sc = AW_SDHOST_CLASS(klass);
+    sc->max_desc_size = 64 * KiB;
+    sc->is_sun4i = false;
+    sc->can_calibrate = true;
+    sc->dmac_shift = 2;
 }
 
 static const TypeInfo allwinner_sdhost_info = {
@@ -976,6 +993,12 @@ static const TypeInfo allwinner_sdhost_sun50i_a64_emmc_info = {
     .class_init    = allwinner_sdhost_sun50i_a64_emmc_class_init,
 };
 
+static const TypeInfo allwinner_sdhost_sun50i_h616_info = {
+    .name          = TYPE_AW_SDHOST_SUN50I_H616,
+    .parent        = TYPE_AW_SDHOST,
+    .class_init    = allwinner_sdhost_sun50i_h616_class_init,
+};
+
 static const TypeInfo allwinner_sdhost_bus_info = {
     .name = TYPE_AW_SDHOST_BUS,
     .parent = TYPE_SD_BUS,
@@ -990,6 +1013,7 @@ static void allwinner_sdhost_register_types(void)
     type_register_static(&allwinner_sdhost_sun5i_info);
     type_register_static(&allwinner_sdhost_sun50i_a64_info);
     type_register_static(&allwinner_sdhost_sun50i_a64_emmc_info);
+    type_register_static(&allwinner_sdhost_sun50i_h616_info);
     type_register_static(&allwinner_sdhost_bus_info);
 }
 

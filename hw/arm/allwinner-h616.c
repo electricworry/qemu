@@ -261,7 +261,7 @@ static void allwinner_h616_init(Object *obj)
                               "identifier");
 
     printf("allwinner_h616_init\n");
-    object_initialize_child(obj, "mmc0", &s->mmc0, TYPE_AW_SDHOST_SUN50I_A64_EMMC);
+    object_initialize_child(obj, "mmc0", &s->mmc0, TYPE_AW_SDHOST_SUN50I_H616);
 
     object_initialize_child(obj, "emac0", &s->emac0, TYPE_AW_SUN8I_EMAC);
     object_initialize_child(obj, "emac1", &s->emac1, TYPE_AW_SUN8I_EMAC);
