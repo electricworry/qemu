@@ -54,6 +54,7 @@ const hwaddr allwinner_h616_memmap[] = {
     [AW_H616_DEV_PIT]        = 0x03009000,
     [AW_H616_DEV_WDT]        = 0x030090a0,
     [AW_H616_DEV_UART0]      = 0x05000000,
+    [AW_H616_DEV_HDMI]      = 0x06000000,
     // [AW_H616_DEV_UART1]      = 0x05000400,
     // [AW_H616_DEV_UART2]      = 0x05000800,
     // [AW_H616_DEV_UART3]      = 0x05000C00,
@@ -199,6 +200,7 @@ enum {
     AW_H616_GIC_SPI_TIMER0    = 48, // correct
     AW_H616_GIC_SPI_TIMER1    = 49, // correct
     AW_H616_GIC_SPI_R_TWI     = 44,
+    AW_H616_GIC_HDMI_TX0      = 63, // correct
     AW_H616_GIC_SPI_EHCI0     = 72,
     AW_H616_GIC_SPI_OHCI0     = 73,
     AW_H616_GIC_SPI_EHCI1     = 74,
@@ -251,6 +253,7 @@ static void allwinner_h616_init(Object *obj)
                               "clk1-freq");
 
     object_initialize_child(obj, "ccu", &s->ccu, TYPE_AW_H616_CCU);
+    object_initialize_child(obj, "hdmi", &s->hdmi, TYPE_AW_H616_HDMI);
 
     object_initialize_child(obj, "sysctrl", &s->sysctrl, TYPE_AW_H616_SYSCTRL);
 
@@ -395,6 +398,12 @@ static void allwinner_h616_realize(DeviceState *dev, Error **errp)
     /* Clock Control Unit */
     sysbus_realize(SYS_BUS_DEVICE(&s->ccu), &error_fatal);
     sysbus_mmio_map(SYS_BUS_DEVICE(&s->ccu), 0, s->memmap[AW_H616_DEV_CCU]);
+
+    /* HDMI */
+    sysbus_realize(SYS_BUS_DEVICE(&s->hdmi), &error_fatal);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->hdmi), 0, s->memmap[AW_H616_DEV_HDMI]);
+    sysbus_connect_irq(SYS_BUS_DEVICE(&s->hdmi), 0,
+                       qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_HDMI_TX0));
 
     /* System Control */
     sysbus_realize(SYS_BUS_DEVICE(&s->sysctrl), &error_fatal);

@@ -51,6 +51,7 @@
 #include "target/arm/cpu.h"
 #include "system/block-backend.h"
 #include "hw/dma/allwinner_dma.h"
+#include "hw/display/allwinner-h616-dw-hdmi.h"
 
 /**
  * Allwinner H616 device list
@@ -80,6 +81,7 @@ enum {
     AW_H616_DEV_OHCI3,
     AW_H616_DEV_CCU,
     AW_H616_DEV_PIT,
+    AW_H616_DEV_HDMI,
     AW_H616_DEV_UART0,
     AW_H616_DEV_UART1,
     AW_H616_DEV_UART2,
@@ -159,6 +161,7 @@ struct AwH616State {
     MemoryRegion sram_a1;
     MemoryRegion sram_c;
     AllwinnerDMAState dma;
+    AwH616HdmiState hdmi;
 };
 
 /**
