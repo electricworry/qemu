@@ -34,6 +34,20 @@
 /** Total number of known registers */
 #define AW_H616_HDMI_REGS_NUM      (AW_H616_HDMI_IOSIZE / sizeof(uint8_t))
 
+
+#define HDMI_IH_MUTE_I2CM_STAT0                 0x0185
+
+enum {
+/* IH_I2CM_STAT0 and IH_MUTE_I2CM_STAT0 field values */
+       HDMI_IH_I2CM_STAT0_DONE = 0x2,
+       HDMI_IH_I2CM_STAT0_ERROR = 0x1,
+/* I2CM_OPERATION field values */
+       HDMI_I2CM_OPERATION_WRITE = 0x10,
+       HDMI_I2CM_OPERATION_READ_EXT = 0x2,
+       HDMI_I2CM_OPERATION_READ = 0x1,
+
+};
+
 /** @} */
 
 /**
