@@ -102,6 +102,7 @@ static uint8_t edid_array[] = {
 static uint64_t allwinner_h616_hdmi_read(void *opaque, hwaddr offset,
                                       unsigned size)
 {
+    AwH616HdmiState *s = AW_H616_HDMI(opaque);
     // printf("HDMIREAD: addr 0x%x size %d\n", (unsigned int) offset, size);
 
     uint8_t *ptr = (uint8_t *) &s->regs[offset];
