@@ -50,6 +50,7 @@
 #include "hw/watchdog/allwinner-wdt.h"
 #include "target/arm/cpu.h"
 #include "system/block-backend.h"
+#include "hw/display/allwinner-h616-dw-hdmi.h"
 
 /**
  * Allwinner H3 device list
@@ -97,7 +98,8 @@ enum {
     AW_H3_DEV_CPUCFG,
     AW_H3_DEV_R_TWI,
     AW_H3_DEV_SDRAM,
-    AW_H3_DEV_WDT
+    AW_H3_DEV_WDT,
+    AW_H616_DEV_HDMI
 };
 
 /** Total number of CPU cores in the H3 SoC */
@@ -147,6 +149,7 @@ struct AwH3State {
     MemoryRegion sram_a1;
     MemoryRegion sram_a2;
     MemoryRegion sram_c;
+    AwH616HdmiState hdmi;
 };
 
 /**

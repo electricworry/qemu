@@ -70,7 +70,8 @@ const hwaddr allwinner_h3_memmap[] = {
     [AW_H3_DEV_RTC]        = 0x01f00000,
     [AW_H3_DEV_CPUCFG]     = 0x01f01c00,
     [AW_H3_DEV_R_TWI]      = 0x01f02400,
-    [AW_H3_DEV_SDRAM]      = 0x40000000
+    [AW_H3_DEV_SDRAM]      = 0x40000000,
+    [AW_H616_DEV_HDMI]     = 0x01ee0000
 };
 
 /* List of unimplemented devices */
@@ -168,7 +169,8 @@ enum {
     AW_H3_GIC_SPI_OHCI2     = 77,
     AW_H3_GIC_SPI_EHCI3     = 78,
     AW_H3_GIC_SPI_OHCI3     = 79,
-    AW_H3_GIC_SPI_EMAC      = 82
+    AW_H3_GIC_SPI_EMAC      = 82,
+    AW_H616_GIC_HDMI_TX0    = 88, // correct
 };
 
 /* Allwinner H3 general constants */
@@ -238,6 +240,8 @@ static void allwinner_h3_init(Object *obj)
     object_initialize_child(obj, "r_twi", &s->r_twi, TYPE_AW_I2C_SUN6I);
 
     object_initialize_child(obj, "wdt", &s->wdt, TYPE_AW_WDT_SUN6I);
+
+    object_initialize_child(obj, "hdmi", &s->hdmi, TYPE_AW_H616_HDMI);
 }
 
 static void allwinner_h3_realize(DeviceState *dev, Error **errp)
@@ -457,6 +461,12 @@ static void allwinner_h3_realize(DeviceState *dev, Error **errp)
     sysbus_realize(SYS_BUS_DEVICE(&s->wdt), &error_fatal);
     sysbus_mmio_map_overlap(SYS_BUS_DEVICE(&s->wdt), 0,
                             s->memmap[AW_H3_DEV_WDT], 1);
+
+    /* HDMI */
+    sysbus_realize(SYS_BUS_DEVICE(&s->hdmi), &error_fatal);
+    sysbus_mmio_map(SYS_BUS_DEVICE(&s->hdmi), 0, s->memmap[AW_H616_DEV_HDMI]);
+    sysbus_connect_irq(SYS_BUS_DEVICE(&s->hdmi), 0,
+                       qdev_get_gpio_in(DEVICE(&s->gic), AW_H616_GIC_HDMI_TX0));
 
     /* Unimplemented devices */
     for (i = 0; i < ARRAY_SIZE(unimplemented); i++) {

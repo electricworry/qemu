@@ -144,5 +144,6 @@ endif
 
 system_ss.add(when: 'CONFIG_OMAP', if_true: files('omap_lcdc.c'))
 system_ss.add(when: 'CONFIG_ALLWINNER_H616', if_true: files('allwinner-h616-dw-hdmi.c'))
+system_ss.add(when: 'CONFIG_ALLWINNER_H3', if_true: files('allwinner-h616-dw-hdmi.c'))
 
 modules += { 'hw-display': hw_display_modules }
