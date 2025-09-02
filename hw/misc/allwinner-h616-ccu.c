@@ -307,14 +307,14 @@ static uint64_t allwinner_h616_ccu_read(void *opaque, hwaddr offset,
         return 0;
     }
 
-    // printf("CCUREAD: addr 0x%x size %d val 0x%x\n", (unsigned int) offset, size, s->regs[idx]);
+    printf("CCUREAD: addr 0x%x size %d val 0x%x\n", (unsigned int) offset, size, s->regs[idx]);
     return s->regs[idx];
 }
 
 static void allwinner_h616_ccu_write(void *opaque, hwaddr offset,
                                    uint64_t val, unsigned size)
 {
-    // printf("CCUWRITE: addr 0x%x size %d val 0x%lx\n", (unsigned int) offset, size, val);
+    printf("CCUWRITE: addr 0x%x size %d val 0x%lx\n", (unsigned int) offset, size, val);
     AwH616ClockCtlState *s = AW_H616_CCU(opaque);
     const uint32_t idx = REG_INDEX(offset);
 
